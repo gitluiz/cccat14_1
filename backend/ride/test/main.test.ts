@@ -1,4 +1,11 @@
-import { getAccount, signup } from "../src/main";
+import {
+	getAccount,
+	signup,
+	createRequestRide,
+	RequestRide,
+	i18n
+} from "../src/main";
+import crypto from "crypto";
 
 test.each([
 	"97456321558",
@@ -114,5 +121,34 @@ test("Não deve criar uma conta para o motorista com a placa inválida", async f
 		password: "123456"
 	};
 	// when
-	await expect(() => signup(inputSignup)).rejects.toThrow(new Error("Invalid car plate"));
+	await expect(() => signup(inputSignup)).rejects.toThrow(
+		new Error("Invalid car plate")
+	);
+});
+
+test("Deve solicitar uma corrida", async function () {
+	// given
+	const inputRequestRide = {
+		passenger_id: crypto.randomUUID(),
+		latitude: -23.563099,
+		longitude: -46.656571
+	};
+	// when
+	const outputCreateRequestRide = await createRequestRide(inputRequestRide);
+	const outputRequestRide = await RequestRide(outputCreateRequestRide.rideId);
+	// then
+	expect(outputCreateRequestRide.rideId).toBeDefined();
+});
+
+test("Não deve solicitar uma corrida", async function () {
+	// given
+	const inputRequestRide = {
+		passenger_id: "0795ff3f-f8a0-4e21-920d-34440fbe431d",
+		latitude: -23.563099,
+		longitude: -46.656571
+	};
+	// when
+	await expect(() => createRequestRide(inputRequestRide)).rejects.toThrow(
+		new Error(i18n.rideInProgress)
+	);
 });
